@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">BookListing</string>
+    <string name="no_internet_connection">No Internet Connection.</string>
+    <string name="book_url">https://www.googleapis.com/books/v1/volumes?q=</string>
+    <string name="enter_your_search">Enter your search</string>
+    <string name="max_result">&amp;maxResults=10</string>
+    <string name="books_not_found">Books not found!</string>
+    <string name="no_title">No Title</string>
+    <string name="no_author">No Author</string>
+    <string name="no_publisher">No Publisher</string>
+    <string name="no_rating">No Rating</string>
+    <string name="not_for_sale">Not for Sale</string>
+    <string name="free">Free</string>
+    <string name="info_link">Info Link</string>
+    <string name="free_link">Free Link</string>
+    <string name="buy">Buy</string>
+</resources>
