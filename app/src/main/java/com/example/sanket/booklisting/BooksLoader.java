@@ -128,7 +128,7 @@ public class BooksLoader extends AsyncTaskLoader<List<Books>> {
                 }
                 else
                 {
-                    author = Resources.getSystem().getString(R.string.no_author);
+                    author = getContext().getString(R.string.no_author);
                 }
 
                 if(volumeInfo.has("imageLinks")) {

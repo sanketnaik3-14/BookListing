@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.Loader;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v4.app.NotificationCompatSideChannelService;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.os.Bundle;
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private ProgressBar progressBar;
     private TextView mEmptyStateTextView;
     private BooksAdapter adapter;
+    LoaderManager loaderManager;
+    private boolean bool = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,15 +44,31 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
 
         progressBar = (ProgressBar) findViewById(R.id.loading_spinner);
+        if(savedInstanceState !=null && savedInstanceState.containsKey("progressBarIsShowing"))
+        {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            progressBar.setVisibility(View.GONE);
+        }
+
         mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
-        mEmptyStateTextView.setText(getString(R.string.enter_your_search));
-        progressBar.setVisibility(View.GONE);
+        if(savedInstanceState !=null && savedInstanceState.containsKey("emptyState"))
+        {
+            mEmptyStateTextView.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            mEmptyStateTextView.setVisibility(View.GONE);
+        }
+
+        loaderManager = getLoaderManager();
+        loaderManager.initLoader(1, null, MainActivity.this);
 
         listView = (ListView) findViewById(R.id.list);
-
         adapter = new BooksAdapter(this, new ArrayList<Books>());
         listView.setAdapter(adapter);
-
         listView.setEmptyView(mEmptyStateTextView);
 
     }
@@ -73,14 +92,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
                 temp = query.replaceAll("\\s+", "");
                 progressBar.setVisibility(View.VISIBLE);
+                bool = true;
                 mEmptyStateTextView.setVisibility(View.GONE);
+                listView.setVisibility(View.GONE);
                 ConnectivityManager coMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo info = coMgr.getActiveNetworkInfo();
 
                 if (info != null && info.isConnected()) {
-                    LoaderManager loaderManager = getLoaderManager();
-                    loaderManager.destroyLoader(1);
-                    loaderManager.initLoader(1, null, MainActivity.this);
+                    loaderManager.restartLoader(1,null,MainActivity.this);
+
                 } else {
                     progressBar.setVisibility(View.GONE);
                     mEmptyStateTextView.setVisibility(View.VISIBLE);
@@ -102,6 +122,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("progressBarIsShowing",bool);
+        outState.putString("emptyState",String.valueOf(mEmptyStateTextView.getText()));
+    }
+
+    @Override
     public Loader<List<Books>> onCreateLoader(int id, Bundle args) {
         String max = getString(R.string.max_result);
         String url = getString(R.string.book_url) + temp + max;
@@ -113,13 +141,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onLoadFinished(Loader<List<Books>> loader, List<Books> data) {
 
+        mEmptyStateTextView.setText(getString(R.string.books_not_found));
         progressBar.setVisibility(View.GONE);
+        listView.setVisibility(View.VISIBLE);
+        bool = false;
         adapter.clear();
 
         if (data != null && !data.isEmpty()) {
             adapter.addAll(data);
         } else {
-            mEmptyStateTextView.setText(getString(R.string.books_not_found));
+            mEmptyStateTextView.setText(getString(R.string.enter_your_search));
             mEmptyStateTextView.setVisibility(View.VISIBLE);
         }
     }
